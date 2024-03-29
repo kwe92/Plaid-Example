@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -12,21 +13,53 @@ class ServerApiService extends ChangeNotifier {
 
   Future<void> exchangePublicTokenForAccessToken(String publicToken) async {
     final response = await client.post(
-        Uri.parse(
-          "$_host/api/set_access_token",
-        ),
-        body: jsonEncode({"public_token": publicToken}));
+      Uri.parse(
+        "$_host/api/set_access_token",
+      ),
+      headers: {HttpHeaders.contentTypeHeader: "application/json"},
+      body: jsonEncode(
+        {"public_token": publicToken},
+      ),
+    );
 
-    final Map<String, dynamic> resonseBody = jsonDecode(response.body);
+    final Map<String, dynamic> responseBody = jsonDecode(response.body);
 
-    debugPrint("\n\nfrom exchangePublicTokenForAccessToken:\n\n$resonseBody");
+    debugPrint("\n\nfrom exchangePublicTokenForAccessToken:\n\n$responseBody");
   }
 
   Future<Map<String, dynamic>> getAccountInformation() async {
-    final response = await client.get(Uri.parse("$_host/api/auth"));
+    final response = await client.get(
+      Uri.parse("$_host/api/auth"),
+      headers: {HttpHeaders.contentTypeHeader: "application/json"},
+    );
 
     final Map<String, dynamic> responseBody = jsonDecode(response.body);
 
     return responseBody;
+  }
+
+  Future<String?> fetchLinkToken() async {
+    final response = await client.post(
+        Uri.parse(
+          "$_host/api/create_link_token",
+        ),
+        headers: {HttpHeaders.contentTypeHeader: "application/json"});
+
+    final Map<String, dynamic> responseBody = jsonDecode(response.body);
+
+    final String? linkToken = responseBody["link_token"];
+
+    debugPrint("\n\nfrom fetchLinkToken:\n\n$responseBody");
+
+    return linkToken;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTransactions() async {
+    final response = await client.get(Uri.parse("$_host/api/transactions"));
+    final List<dynamic> responseBody = json.decode(response.body)["latest_transactions"];
+
+    final List<Map<String, dynamic>> domainData = List.from(responseBody);
+
+    return domainData;
   }
 }
