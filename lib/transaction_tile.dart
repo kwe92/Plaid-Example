@@ -51,7 +51,7 @@ class TransactionListTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      transaction.merchantName,
+                      transaction.merchantName ?? "Unknown",
                       style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,

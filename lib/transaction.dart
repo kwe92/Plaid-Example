@@ -1,8 +1,8 @@
 class Transaction {
-  final String transactionId;
-  final String merchantName;
+  final String? transactionId;
+  final String? merchantName;
   final double amount;
-  final String authorizedDate;
+  final String? authorizedDate;
 
   double get remainder {
     final rem = double.parse(
@@ -14,7 +14,7 @@ class Transaction {
     return rem;
   }
 
-  double get total => amount + remainder;
+  double get total => double.parse((amount + remainder).toStringAsPrecision(2));
 
   const Transaction({
     required this.transactionId,

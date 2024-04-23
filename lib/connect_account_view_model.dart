@@ -1,9 +1,16 @@
+// ignore_for_file: unused_field
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:plaid_example/credit_card.dart';
+import 'package:plaid_example/mortgage.dart';
 import 'package:plaid_example/server_api_service.dart';
+import 'package:plaid_example/student_loan.dart';
 import 'package:plaid_example/transaction.dart';
 import 'package:plaid_flutter/plaid_flutter.dart';
+
+// TODO: Handle Errors by showing toast service
 
 class ConnectAccountViewModel extends ChangeNotifier {
   // TODO: remove eventCount | testing only
@@ -50,6 +57,36 @@ class ConnectAccountViewModel extends ChangeNotifier {
     return transactions;
   }
 
+// TODO: what about car payments?
+
+  Future<void> getLiabilities() async {
+    final liabilitiesMaps = await serverApiService.fetchLiabilities();
+
+    final accounts = await serverApiService.fetchAccounts();
+
+    debugPrint("liabilitiesMaps['credit']: ${liabilitiesMaps['credit']}");
+
+    List<CreditCard> creditCards = [for (Map<String, dynamic> creditCard in liabilitiesMaps['credit']) CreditCard.fromJSON(creditCard)];
+
+    List<MortgageLoan> mortgageLoans = [for (Map<String, dynamic> mortgage in liabilitiesMaps['mortgage']) MortgageLoan.fromJSON(mortgage)];
+
+    List<StudentLoan> studentLoans = [
+      for (Map<String, dynamic> studentLoan in liabilitiesMaps['student']) StudentLoan.fromJSON(studentLoan)
+    ];
+
+    creditCards = [for (CreditCard card in creditCards) _assignAccountNameToCreditCard(card, accounts)];
+
+    mortgageLoans = [for (MortgageLoan mortgage in mortgageLoans) _assignAccountNameToMortgageLoan(mortgage, accounts)];
+
+    studentLoans = [for (StudentLoan studentLoan in studentLoans) _assignAccountNameToStudentLoan(studentLoan, accounts)];
+
+    debugPrint("creditCards: $creditCards");
+
+    debugPrint("mortgageLoans: $mortgageLoans");
+
+    debugPrint("studentLoans: $studentLoans");
+  }
+
   void createLinkTokenConfiguration() {
     _configuration = LinkTokenConfiguration(
       token: _linkToken,
@@ -82,4 +119,31 @@ class ConnectAccountViewModel extends ChangeNotifier {
     final error = event.error?.description();
     print("\n\nonExit metadata: $metadata, error: $error");
   }
+}
+
+CreditCard _assignAccountNameToCreditCard(CreditCard card, List<Map<String, dynamic>> accounts) {
+  Map<String, dynamic> account = accounts.firstWhere((account) => card.accountID == account['account_id'], orElse: () => {});
+  if (account.isNotEmpty) {
+    card.name = account['name'];
+  }
+
+  return card;
+}
+
+MortgageLoan _assignAccountNameToMortgageLoan(MortgageLoan mortgage, List<Map<String, dynamic>> accounts) {
+  Map<String, dynamic> account = accounts.firstWhere((account) => mortgage.accountID == account['account_id'], orElse: () => {});
+  if (account.isNotEmpty) {
+    mortgage.name = account['name'];
+  }
+
+  return mortgage;
+}
+
+StudentLoan _assignAccountNameToStudentLoan(StudentLoan studentLoan, List<Map<String, dynamic>> accounts) {
+  Map<String, dynamic> account = accounts.firstWhere((account) => studentLoan.accountID == account['account_id'], orElse: () => {});
+  if (account.isNotEmpty) {
+    studentLoan.name = account['name'];
+  }
+
+  return studentLoan;
 }

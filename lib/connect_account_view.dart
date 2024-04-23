@@ -23,12 +23,11 @@ class ConnectAccountView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      model.configuration?.toJson().toString() ?? "",
-                      textAlign: TextAlign.center,
-                    ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    model.configuration?.toJson().toString() ?? "",
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -67,14 +66,23 @@ class ConnectAccountView extends StatelessWidget {
                   },
                   child: const Text("Transactions"),
                 ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      model.successObject?.toJson().toString() ?? "",
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () async {
+                    final liabilities = await model.getLiabilities();
+                    // TODO: navigate to the disbursements view screen
+                  },
+                  child: const Text("Liabilities"),
                 ),
+
+                // Expanded(
+                //   child: Center(
+                //     child: Text(
+                //       model.successObject?.toJson().toString() ?? "",
+                //       textAlign: TextAlign.center,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
